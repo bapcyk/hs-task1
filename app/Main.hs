@@ -12,6 +12,8 @@ import System.Environment
 -- XXX stricts to get syntax errors immediately
 data CmdOpts = CmdOpts {
   help     :: !Bool   -- show help
+, rev0     :: !String -- revision 0
+, rev1     :: !String -- revision 1
 , badwords :: !String -- bad words
 , output   :: !String -- output HTML file
   } deriving Show
@@ -21,6 +23,8 @@ data CmdOpts = CmdOpts {
 defaultCmdOpts :: CmdOpts
 defaultCmdOpts = CmdOpts {
   help = False
+, rev0 = "HEAD~1"
+, rev1 = "HEAD"
 , badwords = ""
 , output = "output.html"
   }
@@ -33,6 +37,14 @@ cmdSyntax =
     Option ['h', '?'] ["help"]
       (NoArg (\opts -> opts {help=True} ))
       "print this help"
+
+  , Option ['r'] ["rev0"]
+      (ReqArg (\a opts -> opts {rev0=a}) "STR")
+      "from revision"
+
+  , Option ['R'] ["rev1"]
+      (ReqArg (\a opts -> opts {rev1=a}) "STR")
+      "to revision"
 
   , Option ['b'] ["badwords"]
       (ReqArg (\a opts -> opts {badwords=a}) "STR")
