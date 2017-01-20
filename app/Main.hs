@@ -82,4 +82,5 @@ main = do
       let CmdOpts { help = fHelp } = cmdOpts in
         if fHelp then putStrLn usage
         else do
-          print (badwords cmdOpts)
+          diff "HEAD~3" "HEAD" "c:/Git/bin/git.exe"
+          -- print (badwords cmdOpts)
