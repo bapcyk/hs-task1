@@ -1,5 +1,5 @@
 module Lib
-    ( diff
+    ( gitdiff
     ) where
 
 import System.Process (readProcess)
@@ -10,6 +10,7 @@ data WordLoc = WordLoc {
 , nline :: Integer -- line number where word was found
   }
 
--- diff :: IO ()
-diff rev0 rev1 gitbin = do
-  readProcess gitbin ["diff", rev0 ++ ".." ++ rev1] [] >>= putStrLn
+-- | Get diff between revision `rev0`..`rev1` of local master branch
+gitdiff :: String -> String -> String -> IO String
+gitdiff rev0 rev1 gitbin = do
+  readProcess gitbin ["diff", rev0 ++ ".." ++ rev1] []

@@ -7,6 +7,7 @@ import System.Console.GetOpt
 import System.Environment
 -- import qualified Data.ByteString.Lazy.Char8 as LBS
 
+gITBIN = "c:/Git/bin/git.exe"
 
 -- | Command line options
 -- XXX stricts to get syntax errors immediately
@@ -40,11 +41,11 @@ cmdSyntax =
 
   , Option ['r'] ["rev0"]
       (ReqArg (\a opts -> opts {rev0=a}) "STR")
-      "from revision"
+      "from revision (default: HEAD~1)"
 
   , Option ['R'] ["rev1"]
       (ReqArg (\a opts -> opts {rev1=a}) "STR")
-      "to revision"
+      "to revision (default: HEAD)"
 
   , Option ['b'] ["badwords"]
       (ReqArg (\a opts -> opts {badwords=a}) "STR")
@@ -82,5 +83,4 @@ main = do
       let CmdOpts { help = fHelp } = cmdOpts in
         if fHelp then putStrLn usage
         else do
-          diff "HEAD~3" "HEAD" "c:/Git/bin/git.exe"
-          -- print (badwords cmdOpts)
+          gitdiff (rev0 cmdOpts) (rev1 cmdOpts) (gITBIN) >>= putStrLn
