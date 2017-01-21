@@ -68,7 +68,8 @@ instance Read DiffNL where
   readsPrec _ "\\No new line at end of file" = [(DiffNL, "")]
   readsPrec _ _ = []
 
-parse :: MaybeT (State String) DiffRange --String
+-- | Parses DiffRange string, returns (range::Maybe DiffRange, notParsed::String)
+parse :: MaybeT (State String) DiffRange
 parse = do
   -- Line:
   --   lift (readRawUntil isNumber) >>= guard . ("@@ -"==)
@@ -87,7 +88,11 @@ parse = do
   lenB <- lift (readRawUntil isSpace)
   return $ DiffRange (int begA) (int lenA) (int begB) (int lenB)
 
--- instance Read DiffRange where
+instance Read DiffRange where
+  readsPrec _ s =
+    case runState (runMaybeT parse) s of
+      (Nothing, _) -> []
+      (Just range, _) -> [(range, "")]
   -- readsPrec _ s = readRawUntil
   -- readsPrec _ s
   --   | "@@ " `isPrefixOf` s = [(DiffRange 0 0 0 0, "")]
