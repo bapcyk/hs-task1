@@ -1,5 +1,8 @@
 module Lib where
 
+import Data.Char
+import Control.Monad.State
+import Text.Read (readMaybe)
 import System.Process (readProcess)
 import Data.List (isPrefixOf)
 
@@ -41,14 +44,30 @@ data Marker =
   | FilesMarker DiffFiles -- compared files marker
   deriving Show
 
+-- | Drop `this` sequence from sequence `s` and returns Just tail, but if `s` is
+-- not prefixed by `this` then returns Nothing
+-- dropThis :: Eq a => [a] -> [a] -> Maybe [a]
+-- dropThis this s =
+--   if this `isPrefixOf` s then Just $ drop (length this) s
+--   else Nothing
+
+readRawUntil :: (a -> Bool) -> State [a] [a]
+readRawUntil end = do
+  s <- get
+  let taken = takeWhile (not . end) s
+  put $ drop (length taken) s
+  return taken
+
+maybeStr a b = if a == b then Just a else Nothing
+
 -- | Reader of DiffNL diff's string
 instance Read DiffNL where
   readsPrec _ "\\No new line at end of file" = [(DiffNL, "")]
   readsPrec _ _ = []
 
 instance Read DiffRange where
+  -- readsPrec _ s = readRawUntil
   readsPrec _ s
-  -- TODO read numbers
     | "@@ " `isPrefixOf` s = [(DiffRange 0 0 0 0, "")]
     | otherwise = []
 
