@@ -1,6 +1,7 @@
 module Lib where
 
 import System.Process (readProcess)
+import Data.List (isPrefixOf)
 
 -- | Hunk compared files marker, looks like:
 -- "diff --git a/app/Main.hs b/app/Main.hs"
@@ -40,15 +41,16 @@ data Marker =
   | FilesMarker DiffFiles -- compared files marker
   deriving Show
 
+-- | Reader of DiffNL diff's string
 instance Read DiffNL where
   readsPrec _ "\\No new line at end of file" = [(DiffNL, "")]
   readsPrec _ _ = []
 
--- identMarker :: String -> Marker
--- identMarker s =
---   if s == "\\ No newline at end of file" then
---     NLMarker
---     else if "@@"
+instance Read DiffRange where
+  readsPrec _ s
+  -- TODO read numbers
+    | "@@ " `isPrefixOf` s = [(DiffRange 0 0 0 0, "")]
+    | otherwise = []
 
 -- | Get diff between revision `rev0`..`rev1` of local master branch
 gitdiff :: String -> String -> String -> IO String
