@@ -68,31 +68,24 @@ instance Read DiffNL where
   readsPrec _ "\\No new line at end of file" = [(DiffNL, "")]
   readsPrec _ _ = []
 
-parse :: MaybeT (State String) String
+parse :: MaybeT (State String) DiffRange --String
 parse = do
   -- Line:
   --   lift (readRawUntil isNumber) >>= guard . ("@@ -"==)
   -- is the same as:
   --   pre <- lift (readRawUntil isSpace)
-  --   guard (pre == "@@")
-  let expectUntil exp unt = lift (readRawUntil unt) >>= guard . (exp==)
-  "@@ -" `expectUntil` isNumber
+  --   guard (pre == "@@ -")
+  let isExpectedBefore exp unt = lift (readRawUntil unt) >>= guard . (exp==)
+  let int = read :: String->Integer
+  "@@ -" `isExpectedBefore` isNumber
   begA <- lift (readRawUntil isPunctuation)
-  "," `expectUntil` isNumber
+  "," `isExpectedBefore` isNumber
   lenA <- lift (readRawUntil isSpace)
-  return $ begA ++ "!" ++ lenA
-
-  -- pre <- lift (readRawUntil isSpace)
-  -- guard (pre == "@@")
-  -- return $ "AAAA"
-
-  -- guard (pre == "@@ ")
-  -- minus <- readRawUntil isNumber
-  -- guard (minus == "-")
-  -- begA <- readRawUntil isPunctuation
-  -- return $ Just begA
-
--- rd s = runState parse s
+  " +" `isExpectedBefore` isNumber
+  begB <- lift (readRawUntil isPunctuation)
+  "," `isExpectedBefore` isNumber
+  lenB <- lift (readRawUntil isSpace)
+  return $ DiffRange (int begA) (int lenA) (int begB) (int lenB)
 
 -- instance Read DiffRange where
   -- readsPrec _ s = readRawUntil
