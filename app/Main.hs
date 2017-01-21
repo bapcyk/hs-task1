@@ -83,4 +83,4 @@ main = do
       let CmdOpts { help = fHelp } = cmdOpts in
         if fHelp then putStrLn usage
         else do
-          gitdiff (rev0 cmdOpts) (rev1 cmdOpts) (gITBIN) >>= putStrLn
+          gitdiff (rev0 cmdOpts) (rev1 cmdOpts) gITBIN >>= putStrLn
