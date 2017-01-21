@@ -1,7 +1,10 @@
 module Lib where
 
 import Data.Char
-import Control.Monad.State
+import Control.Monad (guard)
+import Control.Monad.Trans.State
+import Control.Monad.Trans.Maybe
+import Control.Monad.Trans.Class
 import Text.Read (readMaybe)
 import System.Process (readProcess)
 import Data.List (isPrefixOf)
@@ -65,11 +68,37 @@ instance Read DiffNL where
   readsPrec _ "\\No new line at end of file" = [(DiffNL, "")]
   readsPrec _ _ = []
 
-instance Read DiffRange where
+parse :: MaybeT (State String) String
+parse = do
+  -- Line:
+  --   lift (readRawUntil isNumber) >>= guard . ("@@ -"==)
+  -- is the same as:
+  --   pre <- lift (readRawUntil isSpace)
+  --   guard (pre == "@@")
+  let expectUntil exp unt = lift (readRawUntil unt) >>= guard . (exp==)
+  "@@ -" `expectUntil` isNumber
+  begA <- lift (readRawUntil isPunctuation)
+  "," `expectUntil` isNumber
+  lenA <- lift (readRawUntil isSpace)
+  return $ begA ++ "!" ++ lenA
+
+  -- pre <- lift (readRawUntil isSpace)
+  -- guard (pre == "@@")
+  -- return $ "AAAA"
+
+  -- guard (pre == "@@ ")
+  -- minus <- readRawUntil isNumber
+  -- guard (minus == "-")
+  -- begA <- readRawUntil isPunctuation
+  -- return $ Just begA
+
+-- rd s = runState parse s
+
+-- instance Read DiffRange where
   -- readsPrec _ s = readRawUntil
-  readsPrec _ s
-    | "@@ " `isPrefixOf` s = [(DiffRange 0 0 0 0, "")]
-    | otherwise = []
+  -- readsPrec _ s
+  --   | "@@ " `isPrefixOf` s = [(DiffRange 0 0 0 0, "")]
+  --   | otherwise = []
 
 -- | Get diff between revision `rev0`..`rev1` of local master branch
 gitdiff :: String -> String -> String -> IO String
