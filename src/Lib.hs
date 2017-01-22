@@ -120,7 +120,7 @@ parseDiffFiles = do
   " b" `_isExpectedBefore` (=='/')
   fileB <- lift (readRawUntil isSpace)
   -- TODO remove "/" in front of fileX
-  return $ DiffFiles fileA fileA
+  return $ DiffFiles fileA fileB
 
 
 -- | Parses DiffLine, returns (line::Maybe DiffLine, notParsed::String)
@@ -157,6 +157,7 @@ instance Read DiffLine where
   readsPrec _ = readParsedWith parseDiffLine
 
 
+-- | Read of any known Marker. Usage: read "diff --git a/xxx b/yyy"::Marker
 instance Read Marker where
   readsPrec _ s =
     case marker of
@@ -166,6 +167,7 @@ instance Read Marker where
         marker = foldl1 (<|>) [FilesMarker <$> (readMaybe s :: Maybe DiffFiles),
                                RangeMarker <$> (readMaybe s :: Maybe DiffRange),
                                LineMarker  <$> (readMaybe s :: Maybe DiffLine)]
+
 
 -- | Get diff between revision `rev0`..`rev1` of local master branch
 gitdiff :: String -> String -> String -> IO String
