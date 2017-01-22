@@ -1,8 +1,10 @@
+--{-# LANGUAGE RankNTypes #-}
 module Lib where
 
 
 import Data.Char
-import Control.Monad (guard)
+import Control.Applicative ((<|>))
+import Control.Monad (guard, mplus)
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.Class
@@ -131,7 +133,7 @@ parseDiffLine = do
              '+':t -> DiffLine Add t
              '-':t -> DiffLine Del t
              ' ':t -> DiffLine No t
-             _ -> DiffLine No line
+             _     -> DiffLine No line
 
 
 -------------------------------- Read instances -------------------------------
@@ -154,6 +156,16 @@ instance Read DiffFiles where
 instance Read DiffLine where
   readsPrec _ = readParsedWith parseDiffLine
 
+
+instance Read Marker where
+  readsPrec _ s =
+    case marker of
+      Nothing -> []
+      Just some -> [(some, "")]
+    where
+        marker = foldl1 (<|>) [FilesMarker <$> (readMaybe s :: Maybe DiffFiles),
+                               RangeMarker <$> (readMaybe s :: Maybe DiffRange),
+                               LineMarker  <$> (readMaybe s :: Maybe DiffLine)]
 
 -- | Get diff between revision `rev0`..`rev1` of local master branch
 gitdiff :: String -> String -> String -> IO String
