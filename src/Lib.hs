@@ -3,6 +3,7 @@ module Lib where
 
 
 import Data.Char
+import Data.Bool (bool)
 import Control.Applicative ((<|>))
 import Control.Monad (guard, mplus)
 import Control.Monad.Trans.State
@@ -60,7 +61,32 @@ data Marker =
   deriving Show
 
 
------------------------------ Common utilities --------------------------------
+-- | Hightlight string (usual or hightlighted)
+data HiStr = LoStr String|HiStr String
+  deriving Show
+
+
+-- | Output string is list of possible hightlighted strings
+type OutStr = [HiStr]
+
+
+-- | Output items (to pass into html)
+data OutItem =
+  OutFiles DiffFiles        -- comparing files
+  | OutRange DiffRange      -- hunk range
+  | OutLine OutStr Integer  -- output string (w/ marked words), hunk line number
+  deriving Show
+
+
+-- | Context of iteration over diff lines
+data Ctx = Ctx {
+  files :: DiffFiles     -- comparing files
+, range :: DiffRange     -- hunk range
+, hunkLineNum :: Integer -- line number in the hunk
+  } deriving Show
+
+
+----------------------------- Parse utilities ---------------------------------
 
 -- | "Reads" some items (chars) until `end` returns True. Returns readed items
 -- and tail (not readed) because it uses state
@@ -169,6 +195,15 @@ instance Read Marker where
                                LineMarker  <$> (readMaybe s :: Maybe DiffLine)]
 
 
+--------------------------- Search words utilities ----------------------------
+
+-- | Hightlights words `ws` in input string `s`, produces [HiStr x/LoStr x, ...]
+hiWords :: [String] -> String -> OutStr
+hiWords ws s =
+  map (\e -> (bool LoStr HiStr (elem e ws)) e) $ words s
+
+
+---------------------------------- Git utilities ------------------------------
 -- | Get diff between revision `rev0`..`rev1` of local master branch
 gitdiff :: String -> String -> String -> IO String
 gitdiff rev0 rev1 gitbin = do

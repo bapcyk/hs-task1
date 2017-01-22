@@ -84,3 +84,4 @@ main = do
         if fHelp then putStrLn usage
         else do
           gitdiff (rev0 cmdOpts) (rev1 cmdOpts) gITBIN >>= putStrLn
+          -- gitdiff (rev0 cmdOpts) (rev1 cmdOpts) gITBIN >>= return.lines >>= return.show >>= putStrLn
