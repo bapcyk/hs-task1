@@ -236,20 +236,33 @@ procDiffLine ctx s =
 
 ------------------------------ HTML output utilities --------------------------
 
+-- | Escapes string `s` to be HTML safe
+escHtml :: String -> String
+escHtml s = intercalate "" $ map repl s
+  where
+    repl '\n' = "<br/>"
+    repl '\t' = "&emsp;"
+    repl ' ' = "&nbsp;"
+    repl '<' = "&lt;"
+    repl '>' = "&gt;"
+    repl '&' = "&amp;"
+    repl c = [c]
+
+
 -- | Show OutItem as HTML
 instance ShowHtml OutItem where
   showHtml (OutFiles f) =
-    ("<div class=\"filea\"><b>FILE A:</b>"++(fileA f)++"</div>"
-    ++ "<div class=\"fileb\"><b>FILE B:</b>"++(fileB f)++"</div>")
+    ("<div class=\"filea\"><b>FILE A: </b>"++(fileA f)++"</div>"
+    ++ "<div class=\"fileb\"><b>FILE B: </b>"++(fileB f)++"</div>")
   showHtml (OutRange r) =
-    ("<div class=\"range\"><b>CHANGE OF FILE A - from-to:</b>"++(show $ begA r)
+    ("<div class=\"range\"><b>CHANGE OF FILE A - from-to: </b>"++(show $ begA r)
     ++"-"++(show $ begA r + lenA r - 1)++"</div>"
-    ++"<div class=\"range\"><b>CHANGE OF FILE B - from-to:</b>"++(show $ begB r)
+    ++"<div class=\"range\"><b>CHANGE OF FILE B - from-to: </b>"++(show $ begB r)
     ++"-"++(show $ begB r + lenB r - 1)++"</div>")
   showHtml (OutLine os ln) =
     "<div class=\"line\">"++(intercalate " " $ map hi os)++"</div>"
-    where hi (HiStr s) = "<span class=\"highlight\">"++s++"</span>" -- TODO escape!
-          hi (LoStr s) = s
+    where hi (HiStr s) = "<span class=\"highlight\">"++(escHtml s)++"</span>"
+          hi (LoStr s) = escHtml s
 
 
 -- | Show Ctx as HTML
