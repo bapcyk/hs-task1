@@ -83,6 +83,12 @@ main = do
       let CmdOpts { help = fHelp } = cmdOpts in
         if fHelp then putStrLn usage
         else do
+          gitHtmlDiff
+            (rev0 cmdOpts)
+            (rev1 cmdOpts)
+            gITBIN
+            (words $ badwords cmdOpts)
+          >>= putStrLn
           -- gitdiff (rev0 cmdOpts) (rev1 cmdOpts) gITBIN >>= putStrLn
-          gitdiff (rev0 cmdOpts) (rev1 cmdOpts) gITBIN >>= return . procDiff (words$badwords cmdOpts) >>= return.showHtml >>= putStrLn
+          -- gitdiff (rev0 cmdOpts) (rev1 cmdOpts) gITBIN >>= return . procDiff (words$badwords cmdOpts) >>= return.showHtml >>= putStrLn
           -- gitdiff (rev0 cmdOpts) (rev1 cmdOpts) gITBIN >>= return.lines >>= return.show >>= putStrLn

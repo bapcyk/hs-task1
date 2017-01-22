@@ -242,11 +242,11 @@ escHtml s = intercalate "" $ map repl s
   where
     repl '\n' = "<br/>"
     repl '\t' = "&emsp;"
-    repl ' ' = "&nbsp;"
-    repl '<' = "&lt;"
-    repl '>' = "&gt;"
-    repl '&' = "&amp;"
-    repl c = [c]
+    repl ' '  = "&nbsp;"
+    repl '<'  = "&lt;"
+    repl '>'  = "&gt;"
+    repl '&'  = "&amp;"
+    repl c    = [c]
 
 
 -- | Show OutItem as HTML
@@ -281,3 +281,10 @@ gitdiff rev0 rev1 gitbin = do
 -- | Processes diff output w/ bad words list `bw`
 procDiff :: [String] -> String -> Ctx
 procDiff bw = foldl procDiffLine (emptyCtx bw) . lines
+
+
+-- | The same as gitdiff but returns HTML as IO String; `bw` is list of bad
+-- words
+gitHtmlDiff :: String -> String -> String -> [String] -> IO String
+gitHtmlDiff rev0 rev1 gitbin bw =
+  gitdiff rev0 rev1 gitbin >>= return . procDiff bw >>= return . showHtml
