@@ -273,6 +273,19 @@ instance ShowHtml Ctx where
   showHtml ctx = foldl1 (++) $ map showHtml (outItems ctx)
 
 
+-- | HTML header
+htmlHeader rev0 rev1 =
+  ("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"HTTP://WWW.W3.ORG/TR/REC-HTML40/STRICT.DTD\">"
+   ++"<html><head>"
+   ++"<meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-1\">"
+   ++"<title>Diff between revisions "++rev0++".."++rev1++"</title>"
+   ++"</head><body>")
+
+
+-- | HTML footer
+htmlFooter = "</body></html>"
+
+
 ---------------------------------- Git utilities ------------------------------
 
 -- | Get diff between revision `rev0`..`rev1` of local master branch
@@ -290,4 +303,5 @@ procDiff bw = foldl procDiffLine (emptyCtx bw) . lines
 -- words
 gitHtmlDiff :: String -> String -> String -> [String] -> IO String
 gitHtmlDiff rev0 rev1 gitbin bw =
-  gitdiff rev0 rev1 gitbin >>= return . procDiff bw >>= return . showHtml
+  gitdiff rev0 rev1 gitbin >>= return . procDiff bw >>= return . asHtml
+  where asHtml ctx = (htmlHeader rev0 rev1)++showHtml ctx++htmlFooter
