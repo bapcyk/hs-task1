@@ -214,7 +214,9 @@ procDiffLine :: Ctx -> String -> Ctx
 procDiffLine ctx s =
   case readMaybe s :: Maybe Marker of
     Nothing -> ctx
-    Just (LineMarker lm) -> ctx
+    Just (LineMarker l) -> ctx {
+      outItems=(outItems ctx) ++ [OutLine (hiWords ["aa", "bb"] (line l)) 0]
+      }
     Just (RangeMarker r) -> ctx {
       range=r
       , outItems=(outItems ctx) ++ [OutRange r]} -- time for lense ;)
