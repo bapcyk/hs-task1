@@ -61,18 +61,18 @@ data Marker =
   deriving Show
 
 
--- | Hightlight string (usual or hightlighted)
+-- | Highlight string (usual or highlighted)
 data HiStr = LoStr String|HiStr String
   deriving Show
 
 
--- | Output string is list of possible hightlighted strings
+-- | Output string is list of possible highlighted strings
 type OutStr = [HiStr]
 
 
 -- | Output items (to pass into html)
 data OutItem =
-  OutFiles DiffFiles        -- comparing files
+    OutFiles DiffFiles        -- comparing files
   | OutRange DiffRange      -- hunk range
   | OutLine OutStr Integer  -- output string (w/ marked words), hunk line number
   deriving Show
@@ -83,6 +83,7 @@ data Ctx = Ctx {
   files :: DiffFiles     -- comparing files
 , range :: DiffRange     -- hunk range
 , hunkLineNum :: Integer -- line number in the hunk
+, outItems :: [OutItem]  -- output items
   } deriving Show
 
 
@@ -197,10 +198,29 @@ instance Read Marker where
 
 --------------------------- Search words utilities ----------------------------
 
--- | Hightlights words `ws` in input string `s`, produces [HiStr x/LoStr x, ...]
+-- | Highlights words `ws` in input string `s`, produces [HiStr x/LoStr x, ...]
 hiWords :: [String] -> String -> OutStr
 hiWords ws s =
   map (\e -> (bool LoStr HiStr (elem e ws)) e) $ words s
+
+
+---------------------------- Process input utilities --------------------------
+
+emptyCtx = Ctx (DiffFiles "" "") (DiffRange 0 0 0 0) 0 []
+
+
+-- | Processes one input line from diff output
+procDiffLine :: Ctx -> String -> Ctx
+procDiffLine ctx s =
+  case readMaybe s :: Maybe Marker of
+    Nothing -> ctx
+    Just (LineMarker lm) -> ctx
+    Just (RangeMarker r) -> ctx {
+      range=r
+      , outItems=(outItems ctx) ++ [OutRange r]} -- time for lense ;)
+    Just (FilesMarker f) -> ctx {
+      files=f
+      , outItems=(outItems ctx) ++ [OutFiles f]}
 
 
 ---------------------------------- Git utilities ------------------------------
