@@ -11,7 +11,7 @@ import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.Class
 import Text.Read (readMaybe)
 import System.Process (readProcess)
-import Data.List (isPrefixOf)
+import Data.List (isPrefixOf, intercalate)
 
 
 --------------------------------- Types ---------------------------------------
@@ -86,6 +86,11 @@ data Ctx = Ctx {
   ,outItems :: [OutItem]  -- output items
   ,badWords :: [String]   -- "bad" words (to be highlighted)
   } deriving Show
+
+
+-- | Class for convertable to HTML instances
+class ShowHtml a where
+  showHtml :: a -> String
 
 
 ----------------------------- Parse utilities ---------------------------------
@@ -231,15 +236,25 @@ procDiffLine ctx s =
 
 ------------------------------ HTML output utilities --------------------------
 
--- TODO
--- | Outputs as HTML OutItem
-outHtml :: OutItem -> String
-outHtml (OutFiles f) =
-  ("<div class=\"filea\"><b>FILE A</b>"++(fileA f)++"</div>"
-   ++ "<div class=\"fileb\"><b>FILE B</b>"++(fileB f)++"</div>")
-outHtml (OutRange r) =
-  ("<div class=\"filea\"><b>FILE A</b>"++(show $ begA r)++"</div>"
-   ++ "<div class=\"fileb\"><b>FILE B</b>"++(show $ begB r)++"</div>")
+-- | Show OutItem as HTML
+instance ShowHtml OutItem where
+  showHtml (OutFiles f) =
+    ("<div class=\"filea\"><b>FILE A:</b>"++(fileA f)++"</div>"
+    ++ "<div class=\"fileb\"><b>FILE B:</b>"++(fileB f)++"</div>")
+  showHtml (OutRange r) =
+    ("<div class=\"range\"><b>CHANGE OF FILE A - from-to:</b>"++(show $ begA r)
+    ++"-"++(show $ begA r + lenA r - 1)++"</div>"
+    ++"<div class=\"range\"><b>CHANGE OF FILE B - from-to:</b>"++(show $ begB r)
+    ++"-"++(show $ begB r + lenB r - 1)++"</div>")
+  showHtml (OutLine os ln) =
+    "<div class=\"line\">"++(intercalate " " $ map hi os)++"</div>"
+    where hi (HiStr s) = "<span class=\"highlight\">"++s++"</span>" -- TODO escape!
+          hi (LoStr s) = s
+
+
+-- | Show Ctx as HTML
+instance ShowHtml Ctx where
+  showHtml ctx = foldl1 (++) $ map showHtml (outItems ctx)
 
 
 ---------------------------------- Git utilities ------------------------------
