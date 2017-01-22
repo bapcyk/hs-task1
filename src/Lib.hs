@@ -219,14 +219,27 @@ procDiffLine ctx s =
     Nothing -> ctx
     Just (LineMarker l) -> ctx {
       -- TODO 0 - linenum in hunk
-      outItems=(outItems ctx) ++ [OutLine (hiWords (badWords ctx) (line l)) 0]
+      outItems=(outItems ctx)++[OutLine (hiWords (badWords ctx) (line l)) 0]
       }
     Just (RangeMarker r) -> ctx {
       range=r
-      ,outItems=(outItems ctx) ++ [OutRange r]} -- time for lense ;)
+      ,outItems=(outItems ctx)++[OutRange r]} -- time for lense ;)
     Just (FilesMarker f) -> ctx {
       files=f
-      ,outItems=(outItems ctx) ++ [OutFiles f]}
+      ,outItems=(outItems ctx)++[OutFiles f]}
+
+
+------------------------------ HTML output utilities --------------------------
+
+-- TODO
+-- | Outputs as HTML OutItem
+outHtml :: OutItem -> String
+outHtml (OutFiles f) =
+  ("<div class=\"filea\"><b>FILE A</b>"++(fileA f)++"</div>"
+   ++ "<div class=\"fileb\"><b>FILE B</b>"++(fileB f)++"</div>")
+outHtml (OutRange r) =
+  ("<div class=\"filea\"><b>FILE A</b>"++(show $ begA r)++"</div>"
+   ++ "<div class=\"fileb\"><b>FILE B</b>"++(show $ begB r)++"</div>")
 
 
 ---------------------------------- Git utilities ------------------------------
@@ -234,7 +247,7 @@ procDiffLine ctx s =
 -- | Get diff between revision `rev0`..`rev1` of local master branch
 gitdiff :: String -> String -> String -> IO String
 gitdiff rev0 rev1 gitbin = do
-  readProcess gitbin ["diff",rev0 ++ ".." ++ rev1] []
+  readProcess gitbin ["diff",rev0++".."++rev1] []
 
 
 -- | Processes diff output w/ bad words list `bw`
