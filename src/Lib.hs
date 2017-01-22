@@ -278,6 +278,7 @@ htmlHeader rev0 rev1 =
   ("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"HTTP://WWW.W3.ORG/TR/REC-HTML40/STRICT.DTD\">"
    ++"<html><head>"
    ++"<meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-1\">"
+   ++"<link rel=\"stylesheet\" href=\"task2.css\" type=\"text/css\" media=\"all\">"
    ++"<title>Diff between revisions "++rev0++".."++rev1++"</title>"
    ++"</head><body>")
 
