@@ -72,9 +72,9 @@ type OutStr = [HiStr]
 
 -- | Output items (to pass into html)
 data OutItem =
-  OutFiles DiffFiles        -- comparing files
-  | OutRange DiffRange      -- hunk range
-  | OutLine OutStr Integer  -- output string (w/ marked words), hunk line number
+  OutFiles DiffFiles                    -- comparing files
+  | OutRange DiffRange                  -- hunk range
+  | OutLine ChangeAction OutStr Integer -- (change, list-of-hi-words, hunk-line-num)
   deriving Show
 
 
@@ -224,7 +224,7 @@ procDiffLine ctx s =
     Nothing -> ctx
     Just (LineMarker l) -> ctx {
       -- TODO 0 - linenum in hunk
-      outItems=(outItems ctx)++[OutLine (hiWords (badWords ctx) (line l)) 0]
+      outItems=(outItems ctx)++[OutLine (change l) (hiWords (badWords ctx) (line l)) 0]
       }
     Just (RangeMarker r) -> ctx {
       range=r
@@ -259,10 +259,13 @@ instance ShowHtml OutItem where
     ++"-"++(show $ begA r + lenA r - 1)++"</div>"
     ++"<div class=\"range\"><b>CHANGE OF FILE B - from-to: </b>"++(show $ begB r)
     ++"-"++(show $ begB r + lenB r - 1)++"</div>")
-  showHtml (OutLine os ln) =
-    "<div class=\"line\">"++(intercalate " " $ map hi os)++"</div>"
+  showHtml (OutLine ca os ln) =
+    "<div class=\"line "++(cls ca)++"\">"++(intercalate " " $ map hi os)++"</div>"
     where hi (HiStr s) = "<span class=\"highlight\">"++(escHtml s)++"</span>"
           hi (LoStr s) = escHtml s
+          cls Add = "added"
+          cls Del = "deleted"
+          cls No  = "unmodified"
 
 
 -- | Show Ctx as HTML
