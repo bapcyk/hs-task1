@@ -230,12 +230,13 @@ procDiffLine ctx s =
 
 
 ---------------------------------- Git utilities ------------------------------
+
 -- | Get diff between revision `rev0`..`rev1` of local master branch
 gitdiff :: String -> String -> String -> IO String
 gitdiff rev0 rev1 gitbin = do
   readProcess gitbin ["diff", rev0 ++ ".." ++ rev1] []
 
 
-procDiff :: [String] -> String -> IO Ctx
-procDiff bw s =
-  return (lines s) >>= return . foldl procDiffLine (emptyCtx bw)
+-- | Processes diff output w/ bad words list `bw`
+procDiff :: [String] -> String -> Ctx
+procDiff bw = foldl procDiffLine (emptyCtx bw) . lines
