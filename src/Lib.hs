@@ -42,14 +42,15 @@ data DiffLine = DiffLine {
   } deriving Show
 
 
-data DiffNL = DiffNL
-  deriving Show
+-- | Other diff lines like messages, etc - to be ignored (not a text)
+-- data DiffEtc= DiffEtc
+--   deriving Show
 
 
 -- | Found diff marker
 data Marker =
-  NLMarker DiffNL         -- new-line-at-end-of-file marker
-  | LineMarker DiffLine   -- changed/unchanged line marker
+  -- EtcMarker DiffEtc       -- ignoring diff lines
+    LineMarker DiffLine   -- changed/unchanged line marker
   | RangeMarker DiffRange -- range marker
   | FilesMarker DiffFiles -- compared files marker
   deriving Show
@@ -65,38 +66,68 @@ readRawUntil end = do
   return taken
 
 
--- | Reader of DiffNL diff's string
-instance Read DiffNL where
-  readsPrec _ "\\No new line at end of file" = [(DiffNL, "")]
-  readsPrec _ _ = []
+-- | Reader of DiffEtc diff's strings
+-- instance Read DiffEtc where
+--   readsPrec _ "\\No new line at end of file" = [(DiffEtc, "")]
+--   readsPrec _ _ = []
 
+
+-- | Reads raw string until `unt` returns True. Readed value is compared w/
+-- expected raw string `exp` and if is not matched, calls `guard` in current monad
+-- context. `lift` is needed to make function of internal monad (State) to work
+-- w/ data of external monad (MaybeT)
+_isExpectedBefore exp unt = lift (readRawUntil unt) >>= guard . (exp==)
+
+-- | Reads string as Integer
+int = read :: String->Integer
 
 -- | Parses DiffRange string, returns (range::Maybe DiffRange, notParsed::String)
 parseDiffRange :: MaybeT (State String) DiffRange
 parseDiffRange = do
-  -- Line:
-  --   lift (readRawUntil isNumber) >>= guard . ("@@ -"==)
-  -- is the same as:
-  --   pre <- lift (readRawUntil isSpace)
-  --   guard (pre == "@@ -")
-  let isExpectedBefore exp unt = lift (readRawUntil unt) >>= guard . (exp==)
-  let int = read :: String->Integer
-  "@@ -" `isExpectedBefore` isNumber
+  "@@ -" `_isExpectedBefore` isNumber
   begA <- lift (readRawUntil isPunctuation)
-  "," `isExpectedBefore` isNumber
+  "," `_isExpectedBefore` isNumber
   lenA <- lift (readRawUntil isSpace)
-  " +" `isExpectedBefore` isNumber
+  " +" `_isExpectedBefore` isNumber
   begB <- lift (readRawUntil isPunctuation)
-  "," `isExpectedBefore` isNumber
+  "," `_isExpectedBefore` isNumber
   lenB <- lift (readRawUntil isSpace)
   return $ DiffRange (int begA) (int lenA) (int begB) (int lenB)
 
 
+-- | Implementation of readsPrec where input string `s` is parsed w/ `parsefn`
+--   function
+readParsedWith :: MaybeT (State String) t -> String -> [(t, String)]
+readParsedWith parsefn s =
+  case runState (runMaybeT parsefn) s of
+    (Nothing, _) -> []
+    (Just some, _) -> [(some, "")]
+
+
+-- | Parses DiffFiles string, returns (files::Maybe DiffFiles, notParsed::String)
+parseDiffFiles :: MaybeT (State String) DiffFiles
+parseDiffFiles = do
+  "diff --git a" `_isExpectedBefore` (=='/')
+  fileA <- lift (readRawUntil isSpace)
+  " b" `_isExpectedBefore` (=='/')
+  fileB <- lift (readRawUntil isSpace)
+  return $ DiffFiles fileA fileA
+
+
+-------------------------------- Read instances -------------------------------
+
+-- | Read of DiffRange. Can be used as:
+--     read "@@ -1,11 +1,16 @@"::DiffRange
+-- as:
+--     import Text.Read (readMaybe)
+--     readMaybe "@@ -1,11 +1,16 @@"::Maybe DiffRange
 instance Read DiffRange where
-  readsPrec _ s =
-    case runState (runMaybeT parseDiffRange) s of
-      (Nothing, _) -> []
-      (Just range, _) -> [(range, "")]
+  readsPrec _ = readParsedWith parseDiffRange
+
+
+-- | Read of DiffFiles
+instance Read DiffFiles where
+  readsPrec _ = readParsedWith parseDiffFiles
 
 
 -- | Get diff between revision `rev0`..`rev1` of local master branch
