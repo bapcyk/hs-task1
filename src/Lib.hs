@@ -5,7 +5,7 @@ module Lib where
 import Data.Char
 import Data.Bool (bool)
 import Control.Applicative ((<|>))
-import Control.Monad (guard, mplus)
+import Control.Monad (guard,mplus)
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.Class
@@ -20,7 +20,7 @@ import Data.List (isPrefixOf)
 -- "diff --git a/app/Main.hs b/app/Main.hs"
 data DiffFiles = DiffFiles {
   fileA :: String  -- 1st file path
-, fileB :: String  -- 2nd file path
+  ,fileB :: String  -- 2nd file path
   } deriving Show
 
 
@@ -28,9 +28,9 @@ data DiffFiles = DiffFiles {
 -- "@@ -7,11 +7,14 @@ ..."
 data DiffRange = DiffRange {
   begA    :: Integer -- fileA hunk start line
-, lenA    :: Integer -- file A hunk effected lines number
-, begB    :: Integer -- fileB hunk start line
-, lenB    :: Integer -- file B hunk effected lines number
+  ,lenA    :: Integer -- file A hunk effected lines number
+  ,begB    :: Integer -- fileB hunk start line
+  ,lenB    :: Integer -- file B hunk effected lines number
   } deriving Show
 
 
@@ -43,7 +43,7 @@ data ChangeAction = Add | Del | No
 -- "+ ..." or "- ..." or "..."
 data DiffLine = DiffLine {
   change  :: ChangeAction -- kind of change
-, line    :: String       -- line itself
+  ,line    :: String       -- line itself
   } deriving Show
 
 
@@ -55,7 +55,7 @@ data DiffLine = DiffLine {
 -- | Found diff marker
 data Marker =
   -- EtcMarker DiffEtc       -- ignoring diff lines
-    LineMarker DiffLine   -- changed/unchanged line marker
+  LineMarker DiffLine   -- changed/unchanged line marker
   | RangeMarker DiffRange -- range marker
   | FilesMarker DiffFiles -- compared files marker
   deriving Show
@@ -72,7 +72,7 @@ type OutStr = [HiStr]
 
 -- | Output items (to pass into html)
 data OutItem =
-    OutFiles DiffFiles        -- comparing files
+  OutFiles DiffFiles        -- comparing files
   | OutRange DiffRange      -- hunk range
   | OutLine OutStr Integer  -- output string (w/ marked words), hunk line number
   deriving Show
@@ -81,10 +81,10 @@ data OutItem =
 -- | Context of iteration over diff lines
 data Ctx = Ctx {
   files :: DiffFiles     -- comparing files
-, range :: DiffRange     -- hunk range
-, hunkLineNum :: Integer -- line number in the hunk
-, outItems :: [OutItem]  -- output items
-, badWords :: [String]   -- "bad" words (to be highlighted)
+  ,range :: DiffRange     -- hunk range
+  ,hunkLineNum :: Integer -- line number in the hunk
+  ,outItems :: [OutItem]  -- output items
+  ,badWords :: [String]   -- "bad" words (to be highlighted)
   } deriving Show
 
 
@@ -133,11 +133,11 @@ parseDiffRange = do
 
 -- | Implementation of generci `readsPrec` where input string `s` is parsed w/
 -- `parsefn` function
-readParsedWith :: MaybeT (State String) t -> String -> [(t, String)]
+readParsedWith :: MaybeT (State String) t -> String -> [(t,String)]
 readParsedWith parsefn s =
   case runState (runMaybeT parsefn) s of
-    (Nothing, _) -> []
-    (Just some, _) -> [(some, "")]
+    (Nothing,_) -> []
+    (Just some,_) -> [(some,"")]
 
 
 -- | Parses DiffFiles string, returns (files::Maybe DiffFiles, notParsed::String)
@@ -190,7 +190,7 @@ instance Read Marker where
   readsPrec _ s =
     case marker of
       Nothing -> []
-      Just some -> [(some, "")]
+      Just some -> [(some,"")]
     where
         marker = foldl1 (<|>) [FilesMarker <$> (readMaybe s :: Maybe DiffFiles),
                                RangeMarker <$> (readMaybe s :: Maybe DiffRange),
@@ -223,10 +223,10 @@ procDiffLine ctx s =
       }
     Just (RangeMarker r) -> ctx {
       range=r
-      , outItems=(outItems ctx) ++ [OutRange r]} -- time for lense ;)
+      ,outItems=(outItems ctx) ++ [OutRange r]} -- time for lense ;)
     Just (FilesMarker f) -> ctx {
       files=f
-      , outItems=(outItems ctx) ++ [OutFiles f]}
+      ,outItems=(outItems ctx) ++ [OutFiles f]}
 
 
 ---------------------------------- Git utilities ------------------------------
@@ -234,7 +234,7 @@ procDiffLine ctx s =
 -- | Get diff between revision `rev0`..`rev1` of local master branch
 gitdiff :: String -> String -> String -> IO String
 gitdiff rev0 rev1 gitbin = do
-  readProcess gitbin ["diff", rev0 ++ ".." ++ rev1] []
+  readProcess gitbin ["diff",rev0 ++ ".." ++ rev1] []
 
 
 -- | Processes diff output w/ bad words list `bw`
