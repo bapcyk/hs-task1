@@ -207,6 +207,7 @@ hiWords ws s =
 
 ---------------------------- Process input utilities --------------------------
 
+-- | Creates empty context w/ bad words `bw`
 emptyCtx :: [String] -> Ctx
 emptyCtx bw = Ctx (DiffFiles "" "") (DiffRange 0 0 0 0) 0 [] bw
 
@@ -217,6 +218,7 @@ procDiffLine ctx s =
   case readMaybe s :: Maybe Marker of
     Nothing -> ctx
     Just (LineMarker l) -> ctx {
+      -- TODO 0 - linenum in hunk
       outItems=(outItems ctx) ++ [OutLine (hiWords (badWords ctx) (line l)) 0]
       }
     Just (RangeMarker r) -> ctx {
@@ -232,3 +234,8 @@ procDiffLine ctx s =
 gitdiff :: String -> String -> String -> IO String
 gitdiff rev0 rev1 gitbin = do
   readProcess gitbin ["diff", rev0 ++ ".." ++ rev1] []
+
+
+procDiff :: [String] -> String -> IO Ctx
+procDiff bw s =
+  return (lines s) >>= return . foldl procDiffLine (emptyCtx bw)
