@@ -11,6 +11,8 @@ import System.Process (readProcess)
 import Data.List (isPrefixOf)
 
 
+--------------------------------- Types ---------------------------------------
+
 -- | Hunk compared files marker, looks like:
 -- "diff --git a/app/Main.hs b/app/Main.hs"
 data DiffFiles = DiffFiles {
@@ -56,6 +58,8 @@ data Marker =
   deriving Show
 
 
+----------------------------- Common utilities --------------------------------
+
 -- | "Reads" some items (chars) until `end` returns True. Returns readed items
 -- and tail (not readed) because it uses state
 readRawUntil :: (a -> Bool) -> State [a] [a]
@@ -75,11 +79,13 @@ readRawUntil end = do
 -- | Reads raw string until `unt` returns True. Readed value is compared w/
 -- expected raw string `exp` and if is not matched, calls `guard` in current monad
 -- context. `lift` is needed to make function of internal monad (State) to work
--- w/ data of external monad (MaybeT)
+-- w/ data of external monad (MaybeT) due to usage w/ `>>=` of external monad
 _isExpectedBefore exp unt = lift (readRawUntil unt) >>= guard . (exp==)
 
+
 -- | Reads string as Integer
-int = read :: String->Integer
+atoi = read :: String->Integer
+
 
 -- | Parses DiffRange string, returns (range::Maybe DiffRange, notParsed::String)
 parseDiffRange :: MaybeT (State String) DiffRange
@@ -92,11 +98,11 @@ parseDiffRange = do
   begB <- lift (readRawUntil isPunctuation)
   "," `_isExpectedBefore` isNumber
   lenB <- lift (readRawUntil isSpace)
-  return $ DiffRange (int begA) (int lenA) (int begB) (int lenB)
+  return $ DiffRange (atoi begA) (atoi lenA) (atoi begB) (atoi lenB)
 
 
--- | Implementation of readsPrec where input string `s` is parsed w/ `parsefn`
---   function
+-- | Implementation of generci `readsPrec` where input string `s` is parsed w/
+-- `parsefn` function
 readParsedWith :: MaybeT (State String) t -> String -> [(t, String)]
 readParsedWith parsefn s =
   case runState (runMaybeT parsefn) s of
@@ -111,7 +117,21 @@ parseDiffFiles = do
   fileA <- lift (readRawUntil isSpace)
   " b" `_isExpectedBefore` (=='/')
   fileB <- lift (readRawUntil isSpace)
+  -- TODO remove "/" in front of fileX
   return $ DiffFiles fileA fileA
+
+
+-- | Parses DiffLine, returns (line::Maybe DiffLine, notParsed::String)
+parseDiffLine :: MaybeT (State String) DiffLine
+parseDiffLine = do
+  line <- lift (readRawUntil isControl)
+  guard (not (isPrefixOf "+++ " line || isPrefixOf "--- " line))
+  guard (null line || isPrefixOf " " line || isPrefixOf "+" line || isPrefixOf "-" line)
+  return $ case line of
+             '+':t -> DiffLine Add t
+             '-':t -> DiffLine Del t
+             ' ':t -> DiffLine No t
+             _ -> DiffLine No line
 
 
 -------------------------------- Read instances -------------------------------
@@ -128,6 +148,11 @@ instance Read DiffRange where
 -- | Read of DiffFiles
 instance Read DiffFiles where
   readsPrec _ = readParsedWith parseDiffFiles
+
+
+-- | Read of DiffLine
+instance Read DiffLine where
+  readsPrec _ = readParsedWith parseDiffLine
 
 
 -- | Get diff between revision `rev0`..`rev1` of local master branch
