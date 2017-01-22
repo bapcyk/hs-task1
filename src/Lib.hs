@@ -84,6 +84,7 @@ data Ctx = Ctx {
 , range :: DiffRange     -- hunk range
 , hunkLineNum :: Integer -- line number in the hunk
 , outItems :: [OutItem]  -- output items
+, badWords :: [String]   -- "bad" words (to be highlighted)
   } deriving Show
 
 
@@ -206,7 +207,8 @@ hiWords ws s =
 
 ---------------------------- Process input utilities --------------------------
 
-emptyCtx = Ctx (DiffFiles "" "") (DiffRange 0 0 0 0) 0 []
+emptyCtx :: [String] -> Ctx
+emptyCtx bw = Ctx (DiffFiles "" "") (DiffRange 0 0 0 0) 0 [] bw
 
 
 -- | Processes one input line from diff output
@@ -215,7 +217,7 @@ procDiffLine ctx s =
   case readMaybe s :: Maybe Marker of
     Nothing -> ctx
     Just (LineMarker l) -> ctx {
-      outItems=(outItems ctx) ++ [OutLine (hiWords ["aa", "bb"] (line l)) 0]
+      outItems=(outItems ctx) ++ [OutLine (hiWords (badWords ctx) (line l)) 0]
       }
     Just (RangeMarker r) -> ctx {
       range=r
