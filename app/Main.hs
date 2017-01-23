@@ -89,4 +89,4 @@ main = do
         if fHelp then putStrLn usage
         else do
           gitHtmlDiff (rev0 cmdOpts) (rev1 cmdOpts) (git cmdOpts) (words $ badwords cmdOpts)
-          >>= putStrLn
+          >>= writeFile (output cmdOpts) --putStrLn
