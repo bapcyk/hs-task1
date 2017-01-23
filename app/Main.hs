@@ -5,7 +5,6 @@ import Lib
 import System.Exit
 import System.Console.GetOpt
 import System.Environment
--- import qualified Data.ByteString.Lazy.Char8 as LBS
 
 
 -- | Command line options
@@ -80,13 +79,13 @@ parseCmdOpts = do
 main :: IO ()
 main = do
   cmdOpts <- parseCmdOpts
-  if null (badwords cmdOpts) then
-       putStrLn "Option `-b' is mandatory\n"
-    >> putStr usage
-    >> exitFailure
-    else
-      let CmdOpts { help = fHelp } = cmdOpts in
-        if fHelp then putStrLn usage
-        else do
-          gitHtmlDiff (rev0 cmdOpts) (rev1 cmdOpts) (git cmdOpts) (words $ badwords cmdOpts)
-          >>= writeFile (output cmdOpts) --putStrLn
+  if (help cmdOpts)
+    then putStrLn usage
+    else if null (badwords cmdOpts)
+         then putStrLn "Option `-b' is mandatory\n"
+              >> putStr usage
+              >> exitFailure
+         else do
+              gitHtmlDiff (rev0 cmdOpts) (rev1 cmdOpts) (git cmdOpts)
+                (words $ badwords cmdOpts)
+                >>= writeFile (output cmdOpts)
