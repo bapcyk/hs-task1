@@ -204,11 +204,16 @@ instance Read Marker where
 
 --------------------------- Search words utilities ----------------------------
 
-wordsAndGaps str =
-  f str [] ""
+-- | Like `words` but saves also gaps (words w/ spaces only)
+wordsAndGaps :: String -> [String]
+wordsAndGaps str = f str [] ""
   where
+    -- | are `ch` and last string `lst` both spaces or not-spaces?
+    same :: Char -> String -> Bool
     same ch lst = (isSpace ch && (null lst || (isSpace $ lst!!0)) ||
-                    (not $ isSpace ch) && (null lst || (not $ isSpace $ lst!!0)))
+                   (not $ isSpace ch) && (null lst || (not $ isSpace $ lst!!0)))
+    -- | parses input string to `res` list of non-spaces/spaces strings,
+    --   `lst` is the last word/gap
     f :: String -> [String] -> String -> [String]
     f [] res lst = bool (res++[lst]) res (null lst)
     f (h:t) res lst
@@ -220,7 +225,6 @@ wordsAndGaps str =
 hiWords :: [String] -> String -> OutStr
 hiWords ws s =
   map (\e -> (bool LoStr HiStr (elem e ws)) e) $ wordsAndGaps s
-  -- map (\e -> (bool LoStr HiStr (elem e ws)) e) $ words s
 
 
 ---------------------------- Process input utilities --------------------------
