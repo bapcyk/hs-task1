@@ -204,10 +204,23 @@ instance Read Marker where
 
 --------------------------- Search words utilities ----------------------------
 
+wordsAndGaps str =
+  f str [] ""
+  where
+    same ch lst = (isSpace ch && (null lst || (isSpace $ lst!!0)) ||
+                    (not $ isSpace ch) && (null lst || (not $ isSpace $ lst!!0)))
+    f :: String -> [String] -> String -> [String]
+    f [] res lst = bool (res++[lst]) res (null lst)
+    f (h:t) res lst
+      | same h lst = f t res (lst++[h])
+      | otherwise = f t (res++[lst]) [h]
+
+
 -- | Highlights words `ws` in input string `s`, produces [HiStr x/LoStr x, ...]
 hiWords :: [String] -> String -> OutStr
 hiWords ws s =
-  map (\e -> (bool LoStr HiStr (elem e ws)) e) $ words s
+  map (\e -> (bool LoStr HiStr (elem e ws)) e) $ wordsAndGaps s
+  -- map (\e -> (bool LoStr HiStr (elem e ws)) e) $ words s
 
 
 ---------------------------- Process input utilities --------------------------
