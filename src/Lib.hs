@@ -272,10 +272,10 @@ instance ShowHtml OutItem where
     ("<div class=\"filea\"><b>FILE A: </b>"++(fileA f)++"</div>"
     ++ "<div class=\"fileb\"><b>FILE B: </b>"++(fileB f)++"</div>")
   showHtml (OutRange r) =
-    ("<div class=\"range\"><b>CHANGE OF FILE A - from-to: </b>"++(show $ begA r)
-    ++"-"++(show $ begA r + lenA r - 1)++"</div>"
-    ++"<div class=\"range\"><b>CHANGE OF FILE B - from-to: </b>"++(show $ begB r)
-    ++"-"++(show $ begB r + lenB r - 1)++"</div>")
+    ("<div class=\"range\"><b>CHANGE OF FILE A - from/len: </b>"++(show $ begA r)
+    ++"/"++(show $ lenA r)++"</div>"
+    ++"<div class=\"range\"><b>CHANGE OF FILE B - from/len: </b>"++(show $ begB r)
+    ++"/"++(show $ lenB r)++"</div>")
   showHtml (OutLine ca os ln) =
     "<div class=\"line "++(cls ca)++"\">"++(intercalate " " $ map hi os)++"</div>"
     where hi (HiStr s) = "<span class=\"highlight\">"++(escHtml s)++"</span>"

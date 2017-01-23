@@ -7,7 +7,6 @@ import System.Console.GetOpt
 import System.Environment
 -- import qualified Data.ByteString.Lazy.Char8 as LBS
 
-gITBIN = "c:/Git/bin/git.exe"
 
 -- | Command line options
 -- XXX stricts to get syntax errors immediately
@@ -17,6 +16,7 @@ data CmdOpts = CmdOpts {
 , rev1     :: !String -- revision 1
 , badwords :: !String -- bad words
 , output   :: !String -- output HTML file
+, git      :: !String -- path to Git binary
   } deriving Show
 
 
@@ -28,6 +28,7 @@ defaultCmdOpts = CmdOpts {
 , rev1 = "HEAD"
 , badwords = ""
 , output = "output.html"
+, git = "git"
   }
 
 
@@ -54,6 +55,10 @@ cmdSyntax =
   , Option ['o'] ["output"]
       (ReqArg (\a opts -> opts {output=a}) "FILE")
       "output file (default: output.html)"
+
+  , Option ['g'] ["git"]
+      (ReqArg (\a opts -> opts {git=a}) "PATH")
+      "path to Git binary (default: git)"
   ]
 
 
@@ -83,12 +88,5 @@ main = do
       let CmdOpts { help = fHelp } = cmdOpts in
         if fHelp then putStrLn usage
         else do
-          gitHtmlDiff
-            (rev0 cmdOpts)
-            (rev1 cmdOpts)
-            gITBIN
-            (words $ badwords cmdOpts)
+          gitHtmlDiff (rev0 cmdOpts) (rev1 cmdOpts) (git cmdOpts) (words $ badwords cmdOpts)
           >>= putStrLn
-          -- gitdiff (rev0 cmdOpts) (rev1 cmdOpts) gITBIN >>= putStrLn
-          -- gitdiff (rev0 cmdOpts) (rev1 cmdOpts) gITBIN >>= return . procDiff (words$badwords cmdOpts) >>= return.showHtml >>= putStrLn
-          -- gitdiff (rev0 cmdOpts) (rev1 cmdOpts) gITBIN >>= return.lines >>= return.show >>= putStrLn
