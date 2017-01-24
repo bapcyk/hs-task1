@@ -152,8 +152,7 @@ parseDiffFiles = do
   fileA <- lift (readRawUntil isSpace)
   " b" `_isExpectedBefore` (=='/')
   fileB <- lift (readRawUntil isSpace)
-  -- TODO remove "/" in front of fileX
-  return $ DiffFiles fileA fileB
+  return $ DiffFiles (drop 1 fileA) (drop 1 fileB)
 
 
 -- | Parses DiffLine, returns (line::Maybe DiffLine, notParsed::String)
