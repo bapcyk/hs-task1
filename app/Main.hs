@@ -72,7 +72,7 @@ parseCmdOpts = do
   argv <- getArgs
   case getOpt Permute cmdSyntax argv of
     (opts, _, []) -> return $ foldl (flip id) defaultCmdOpts opts
-    (_, _, errs) -> error $ concat errs ++ "\n" ++ usage
+    (_, _, errs) -> errorWithoutStackTrace $ concat errs ++ "\n" ++ usage
 
 
 -- | Main entry
