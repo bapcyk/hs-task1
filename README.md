@@ -5,7 +5,7 @@ Test Haskell task implementing simple Git tool.
 ## Task
 
 - Get GIT difference between any 2 commits on master branch at a local bare
-  repository
+  repository of any files or filtered by extensions (*.cpp, *.h, etc)
 - Search in the text difference for "bad" words (like "strcpy" and "sprintf")
 - If there are - report in a HTML file:
   - which files have those words
