@@ -241,21 +241,24 @@ procDiffLine ctx s =
   let
     -- | Calculates incremenent of lnA, lnB:
     -- Add - incremenents lnB, Del - lnA, +1 to all after iterate over line
-    lnInc (DiffLine Add _) = (1, 2)
-    lnInc (DiffLine Del _) = (2, 1)
+    lnInc (DiffLine Add _) = (0, 1)
+    lnInc (DiffLine Del _) = (1, 0)
     lnInc (DiffLine _   _) = (1, 1)
   in
     case readMaybe s :: Maybe Marker of
+      -- time for lense ;)
       Nothing -> ctx
       Just (LineMarker l) -> ctx {
         outItems=(outItems ctx)++[OutLine (change l) (hiWords (badWords ctx) (line l))
                                   (lnA ctx) (lnB ctx)]
-        ,lnA=(lnA ctx+incA)
-        ,lnB=(lnB ctx+incB)
+        ,lnA=(incA+lnA ctx)
+        ,lnB=(incB+lnB ctx)
         } where (incA, incB) = lnInc l
       Just (RangeMarker r) -> ctx {
         range=r
-        ,outItems=(outItems ctx)++[OutRange r]} -- time for lense ;)
+        ,outItems=(outItems ctx)++[OutRange r]
+        ,lnA=(begA r)
+        ,lnB=(begB r)}
       Just (FilesMarker f) -> ctx {
         files=f
         ,outItems=(outItems ctx)++[OutFiles f]}
@@ -287,7 +290,10 @@ instance ShowHtml OutItem where
     ++"<div class=\"range\"><b>CHANGE OF FILE B - from/len: </b>"++(show $ begB r)
     ++"/"++(show $ lenB r)++"</div>")
   showHtml (OutLine ca os lnA lnB) =
-    "<div class=\"line "++(cls ca)++"\">"++(intercalate " " $ map hi os)++"</div>"
+    "<div class=\"line "++(cls ca)++"\">"
+    ++"<div class=\"ln lnA\">"++(show lnA)++"</div>"
+    ++"<div class=\"ln lnB\">"++(show lnB)++"</div>"
+    ++(intercalate " " $ map hi os)++"</div>"
     where hi (HiStr s) = "<span class=\"highlight\">"++(escHtml s)++"</span>"
           hi (LoStr s) = escHtml s
           cls Add = "added"
@@ -305,7 +311,7 @@ htmlHeader rev0 rev1 =
   ("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"HTTP://WWW.W3.ORG/TR/REC-HTML40/STRICT.DTD\">"
    ++"<html><head>"
    ++"<meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-1\">"
-   ++"<link rel=\"stylesheet\" href=\"task2.css\" type=\"text/css\" media=\"all\">"
+   ++"<link rel=\"stylesheet\" href=\"task1.css\" type=\"text/css\" media=\"all\">"
    ++"<title>Diff between revisions "++rev0++".."++rev1++"</title>"
    ++"</head><body>")
 

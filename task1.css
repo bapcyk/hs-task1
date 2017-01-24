@@ -1,0 +1,38 @@
+html {
+    background-color: green;
+}
+
+body {
+    margin: 10px;
+    padding: 5px;
+    background-color: #8e9;
+}
+
+.filea {
+}
+.fileb {
+}
+.line {
+    font-family: Courier;
+    border-bottom: 1px solid #6c7;
+}
+.ln {
+    width: 4em;
+    max-width: 8em;
+    border-left: 1px solid #8e9;
+    display: inline-block;
+    text-align: right;
+}
+.added > .ln {
+    background-color: green;
+}
+.deleted > .ln {
+    background-color: red;
+}
+.unmodified > .ln {
+}
+.highlight {
+    background-color: yellow;
+}
+.range {
+}
