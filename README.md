@@ -30,6 +30,7 @@ SYNTAX: task1 [options...]
   -b STR   --badwords=STR  badwords string
   -o FILE  --output=FILE   output file (default: output.html)
   -g PATH  --git=PATH      path to Git binary (default: git)
+  -x STR   --exts=STR      extensions, string like "*.cpp *.hpp" (default: all)
 ```
 
 ## Example of output
