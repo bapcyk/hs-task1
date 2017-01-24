@@ -74,15 +74,17 @@ type OutStr = [HiStr]
 data OutItem =
   OutFiles DiffFiles                    -- comparing files
   | OutRange DiffRange                  -- hunk range
-  | OutLine ChangeAction OutStr Integer -- (change, list-of-hi-words, hunk-line-num)
+  -- (change, list-of-hi-words, hunk-line-num-fileA, hunk-line-num-fileB)
+  | OutLine ChangeAction OutStr Integer Integer
   deriving Show
 
 
 -- | Context of iteration over diff lines
 data Ctx = Ctx {
-  files :: DiffFiles     -- comparing files
+  files :: DiffFiles      -- comparing files
   ,range :: DiffRange     -- hunk range
-  ,hunkLineNum :: Integer -- line number in the hunk
+  ,lnA :: Integer         -- line number in the hunk of file A
+  ,lnB :: Integer         -- line number in the hunk of file B
   ,outItems :: [OutItem]  -- output items
   ,badWords :: [String]   -- "bad" words (to be highlighted)
   } deriving Show
@@ -230,7 +232,7 @@ hiWords ws s =
 
 -- | Creates empty context w/ bad words `bw`
 emptyCtx :: [String] -> Ctx
-emptyCtx bw = Ctx (DiffFiles "" "") (DiffRange 0 0 0 0) 0 [] bw
+emptyCtx bw = Ctx (DiffFiles "" "") (DiffRange 0 0 0 0) 0 0 [] bw
 
 
 -- | Processes one input line from diff output
@@ -240,7 +242,7 @@ procDiffLine ctx s =
     Nothing -> ctx
     Just (LineMarker l) -> ctx {
       -- TODO 0 - linenum in hunk
-      outItems=(outItems ctx)++[OutLine (change l) (hiWords (badWords ctx) (line l)) 0]
+      outItems=(outItems ctx)++[OutLine (change l) (hiWords (badWords ctx) (line l)) 0 0]
       }
     Just (RangeMarker r) -> ctx {
       range=r
@@ -275,7 +277,7 @@ instance ShowHtml OutItem where
     ++"/"++(show $ lenA r)++"</div>"
     ++"<div class=\"range\"><b>CHANGE OF FILE B - from/len: </b>"++(show $ begB r)
     ++"/"++(show $ lenB r)++"</div>")
-  showHtml (OutLine ca os ln) =
+  showHtml (OutLine ca os lnA lnB) =
     "<div class=\"line "++(cls ca)++"\">"++(intercalate " " $ map hi os)++"</div>"
     where hi (HiStr s) = "<span class=\"highlight\">"++(escHtml s)++"</span>"
           hi (LoStr s) = escHtml s
