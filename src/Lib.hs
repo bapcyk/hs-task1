@@ -282,13 +282,13 @@ escHtml = intercalate "" . map repl
 -- | Show OutItem as HTML
 instance ShowHtml OutItem where
   showHtml (OutFiles f) =
-    ("<div class=\"filea\"><b>FILE A: </b>"++(fileA f)++"</div>"
-    ++ "<div class=\"fileb\"><b>FILE B: </b>"++(fileB f)++"</div>")
+    ("<div class=\"file filea\"><b>FILE A: </b>"++(fileA f)++"</div>"
+    ++ "<div class=\"file fileb\"><b>FILE B: </b>"++(fileB f)++"</div>")
   showHtml (OutRange r) =
-    ("<div class=\"range\"><b>CHANGE OF FILE A - from/len: </b>"++(show $ begA r)
-    ++"/"++(show $ lenA r)++"</div>"
-    ++"<div class=\"range\"><b>CHANGE OF FILE B - from/len: </b>"++(show $ begB r)
-    ++"/"++(show $ lenB r)++"</div>")
+    ("<div class=\"range rangea\"><b>FILE A: </b>"++(show $ begA r)
+    ++".. ("++(show $ lenA r)++")</div>"
+    ++"<div class=\"range rangeb\"><b>FILE B: </b>"++(show $ begB r)
+    ++".. ("++(show $ lenB r)++")</div>")
   showHtml (OutLine ca os lnA lnB) =
     "<div class=\"line "++(cls ca)++"\">"
     ++"<div class=\"ln lnA\">"++(show lnA)++"</div>"
@@ -308,12 +308,15 @@ instance ShowHtml Ctx where
 
 -- | HTML header
 htmlHeader rev0 rev1 =
-  ("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"HTTP://WWW.W3.ORG/TR/REC-HTML40/STRICT.DTD\">"
+   "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"HTTP://WWW.W3.ORG/TR/REC-HTML40/STRICT.DTD\">"
    ++"<html><head>"
    ++"<meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-1\">"
    ++"<link rel=\"stylesheet\" href=\"task1.css\" type=\"text/css\" media=\"all\">"
    ++"<title>Diff between revisions "++rev0++".."++rev1++"</title>"
-   ++"</head><body>")
+   ++"</head><body>"
+   ++"<h1>"
+   ++"<span class=\"lambda\">&lambda;</span>"
+   ++"Diff between revisions "++rev0++".."++rev1++"</h1>"
 
 
 -- | HTML footer
