@@ -306,9 +306,12 @@ htmlFooter = "</body></html>"
 ---------------------------------- Git utilities ------------------------------
 
 -- | Get diff between revision `rev0`..`rev1` of local master branch
-gitdiff :: String -> String -> String -> IO String
-gitdiff rev0 rev1 gitbin = do
-  readProcess gitbin ["diff",rev0++".."++rev1] []
+gitdiff :: String -> String -> String -> [String] -> IO String
+gitdiff rev0 rev1 gitbin exts = do
+  readProcess gitbin args [] where
+    args = if null exts
+           then ["diff",rev0++".."++rev1]
+           else ["diff",rev0++".."++rev1,"--"]++exts
 
 
 -- | Processes diff output w/ bad words list `bw`
@@ -317,8 +320,8 @@ procDiff bw = foldl procDiffLine (emptyCtx bw) . lines
 
 
 -- | The same as gitdiff but returns HTML as IO String; `bw` is list of bad
--- words
-gitHtmlDiff :: String -> String -> String -> [String] -> IO String
-gitHtmlDiff rev0 rev1 gitbin bw =
-  gitdiff rev0 rev1 gitbin >>= return . procDiff bw >>= return . asHtml
+-- words, `exts` is the list of "*.extension" strings
+gitHtmlDiff :: String -> String -> String -> [String] -> [String] -> IO String
+gitHtmlDiff rev0 rev1 gitbin bw exts =
+  gitdiff rev0 rev1 gitbin exts >>= return . procDiff bw >>= return . asHtml
   where asHtml ctx = (htmlHeader rev0 rev1)++showHtml ctx++htmlFooter

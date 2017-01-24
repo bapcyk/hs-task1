@@ -16,6 +16,7 @@ data CmdOpts = CmdOpts {
 , badwords :: !String -- bad words
 , output   :: !String -- output HTML file
 , git      :: !String -- path to Git binary
+, exts     :: !String -- file extensions
   } deriving Show
 
 
@@ -28,6 +29,7 @@ defaultCmdOpts = CmdOpts {
 , badwords = ""
 , output = "output.html"
 , git = "git"
+, exts = ""
   }
 
 
@@ -58,6 +60,10 @@ cmdSyntax =
   , Option ['g'] ["git"]
       (ReqArg (\a opts -> opts {git=a}) "PATH")
       "path to Git binary (default: git)"
+
+  , Option ['x'] ["exts"]
+      (ReqArg (\a opts -> opts {exts=a}) "STR")
+      "extensions, string like \"*.cpp *.hpp\" (default: all)"
   ]
 
 
@@ -87,5 +93,5 @@ main = do
               >> exitFailure
          else do
               gitHtmlDiff (rev0 cmdOpts) (rev1 cmdOpts) (git cmdOpts)
-                (words $ badwords cmdOpts)
+                (words $ badwords cmdOpts) (words $ exts cmdOpts)
                 >>= writeFile (output cmdOpts)
