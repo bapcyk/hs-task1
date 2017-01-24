@@ -238,25 +238,34 @@ emptyCtx bw = Ctx (DiffFiles "" "") (DiffRange 0 0 0 0) 0 0 [] bw
 -- | Processes one input line from diff output
 procDiffLine :: Ctx -> String -> Ctx
 procDiffLine ctx s =
-  case readMaybe s :: Maybe Marker of
-    Nothing -> ctx
-    Just (LineMarker l) -> ctx {
-      -- TODO 0 - linenum in hunk
-      outItems=(outItems ctx)++[OutLine (change l) (hiWords (badWords ctx) (line l)) 0 0]
-      }
-    Just (RangeMarker r) -> ctx {
-      range=r
-      ,outItems=(outItems ctx)++[OutRange r]} -- time for lense ;)
-    Just (FilesMarker f) -> ctx {
-      files=f
-      ,outItems=(outItems ctx)++[OutFiles f]}
+  let
+    -- | Calculates incremenent of lnA, lnB:
+    -- Add - incremenents lnB, Del - lnA, +1 to all after iterate over line
+    lnInc (DiffLine Add _) = (1, 2)
+    lnInc (DiffLine Del _) = (2, 1)
+    lnInc (DiffLine _   _) = (1, 1)
+  in
+    case readMaybe s :: Maybe Marker of
+      Nothing -> ctx
+      Just (LineMarker l) -> ctx {
+        outItems=(outItems ctx)++[OutLine (change l) (hiWords (badWords ctx) (line l))
+                                  (lnA ctx) (lnB ctx)]
+        ,lnA=(lnA ctx+incA)
+        ,lnB=(lnB ctx+incB)
+        } where (incA, incB) = lnInc l
+      Just (RangeMarker r) -> ctx {
+        range=r
+        ,outItems=(outItems ctx)++[OutRange r]} -- time for lense ;)
+      Just (FilesMarker f) -> ctx {
+        files=f
+        ,outItems=(outItems ctx)++[OutFiles f]}
 
 
 ------------------------------ HTML output utilities --------------------------
 
 -- | Escapes string `s` to be HTML safe
 escHtml :: String -> String
-escHtml s = intercalate "" $ map repl s
+escHtml = intercalate "" . map repl
   where
     repl '\n' = "<br/>"
     repl '\t' = "&emsp;"
