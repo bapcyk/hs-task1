@@ -95,3 +95,4 @@ main = do
               gitHtmlDiff (rev0 cmdOpts) (rev1 cmdOpts) (git cmdOpts)
                 (words $ badwords cmdOpts) (words $ exts cmdOpts)
                 >>= writeFile (output cmdOpts)
+  -- тест юникод
