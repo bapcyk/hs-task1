@@ -54,8 +54,8 @@ data DiffLine = DiffLine {
 
 -- | Found diff marker
 data Marker =
-  -- EtcMarker DiffEtc       -- ignoring diff lines
-  LineMarker DiffLine   -- changed/unchanged line marker
+  -- EtcMarker DiffEtc    -- ignoring diff lines
+  LineMarker DiffLine     -- changed/unchanged line marker
   | RangeMarker DiffRange -- range marker
   | FilesMarker DiffFiles -- compared files marker
   deriving Show
