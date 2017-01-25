@@ -11,6 +11,14 @@ Test Haskell task implementing simple Git tool.
   - which files have those words
   - show lines with highlighted words and the line numbers
 
+## Build
+
+GHC 8.0.1 and LTS-7.16 were used. To build do:
+
+```
+$ stack build
+```
+
 ## Implementation
 
 In this task, in contrast to hs-task2, I avoided to use big packages which can
