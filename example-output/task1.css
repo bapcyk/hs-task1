@@ -1,0 +1,91 @@
+html {
+    background-color: green;
+}
+
+body {
+    margin: 10px;
+    padding: 2px;
+    background-color: #aee253;
+}
+
+h1 {
+    margin: 0 0 20px 0;
+    padding: 20px 0 20px 0;
+    background: linear-gradient(to top, black, #777);
+    color: #90aa66;
+    text-shadow: 1px 3px 2px black;
+    font-family: Verdana;
+    font-size: 18pt;
+    padding-left: 35px;
+}
+
+.lambda {
+    margin: 0 40px 0 0;
+    color: #aee293;
+    text-shadow: 1px 3px 2px black, 0 0 0.5em yellow;
+    font-family: Times;
+    font-size: 42pt;
+}
+
+.file {
+    background: linear-gradient(to top, #111, #885);
+    color: #90aa66;
+    padding: 5px 5px 5px 15px;
+    font-weight: bold;
+    font-family: Courier;
+    font-size: 13pt;
+}
+.filea {
+    margin-top: 10px;
+    border-radius: 10px 10px 0 0;
+}
+.fileb {
+    margin-bottom: 10px;
+    border-radius: 0 0 10px 10px;
+}
+.line {
+    font-family: Courier;
+    border-top: 1px solid #eee;
+}
+.line.added {
+    background-color: #88bc2d;
+}
+.line.deleted {
+    background-color: #bc882d;
+}
+.ln {
+    width: 3.5em;
+    max-width: 8em;
+    border-right: 1px solid #eee;
+    display: inline-block;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1px;
+    color: #2a2a2a;
+}
+.added > .ln {
+    background-color: #477017;
+}
+.deleted > .ln {
+    background-color: #ce5214;
+}
+.unmodified > .ln {
+}
+.highlight {
+    background-color: yellow;
+    font-weight: bold;
+}
+.range {
+    background: linear-gradient(to top, #111, #885);
+    color: #aa3;
+    padding: 5px;
+    font-family: Courier;
+    font-size: 10pt;
+    text-align: center;
+}
+.rangea {
+    border-radius: 10px 10px 0 0;
+}
+.rangeb {
+    border-radius: 0 0 10px 10px;
+}

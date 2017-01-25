@@ -35,4 +35,4 @@ SYNTAX: task1 [options...]
 
 ## Example of output
 
-TODO
+See `example-output/output.html` (w/ `task1.css`).
