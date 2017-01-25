@@ -13,6 +13,7 @@ h1 {
     padding: 20px 0 20px 0;
     background: linear-gradient(to top, black, #777);
     color: #90aa66;
+    text-shadow: 1px 3px 2px black;
     font-family: Verdana;
     font-size: 18pt;
     padding-left: 35px;
@@ -21,6 +22,7 @@ h1 {
 .lambda {
     margin: 0 40px 0 0;
     color: #aee293;
+    text-shadow: 1px 3px 2px black, 0 0 0.5em yellow;
     font-family: Times;
     font-size: 42pt;
 }
